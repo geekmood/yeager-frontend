@@ -11,17 +11,21 @@ export const getNFTs = async (signer, address) => {
     const balance = await contract.balanceOf(address);
     const nfts = [];
 
-    for (let i = 0; i < balance.toNumber(); i++) {
-      const tokenURI = await contract.tokenURI(i);
-
-      if (tokenURI.startsWith("ipfs://")) {
-        continue;
+    try {
+      for (let i = 0; i < balance.toNumber(); i++) {
+        const tokenOwner = await contract.ownerOf(i);
+        if(tokenOwner === address){
+          const tokenURI = await contract.tokenURI(i);
+  
+          const res = await fetch(tokenURI);
+          const json = await res.json();
+          nfts.push({ ...json, tokenId: i });
+        }
       }
-      const res = await fetch(tokenURI);
-      const json = await res.json();
-      nfts.push(json);
+    } catch (error) {
+      console.log("Error", error)
     }
-
+    
     return nfts;
 };
 

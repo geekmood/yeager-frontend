@@ -4,7 +4,7 @@
         <input v-model="metadata.name" placeholder="Name" />
         
         <input v-model="metadata.description" placeholder="Description" />
-        <input type="file" @change="onFileChange" />
+        <input type="file" ref="fileInput" @change="onFileChange"  />
         <button @click="handleMintNFT" :disabled="isLoading">
             {{ isLoading ? 'Minting...' : 'Mint NFT' }}
         </button>
@@ -77,7 +77,7 @@ export default {
                 alert('NFT minted successfully!');
                 this.metadata = { name: '', description: '', image: '' };
                 this.selectedFile = null;
-                console.log("this", this.isLoading)
+                this.$refs.fileInput.value = null;
                 this.$emit('nft-minted');
             } catch (error) {
                 console.error('Error minting NFT:', error);

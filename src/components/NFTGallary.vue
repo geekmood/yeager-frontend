@@ -8,6 +8,7 @@
           <div class="nft-details">
             <p class="nft-name">{{ nft.name }}</p>
             <p class="nft-description">{{ nft.description }}</p>
+            <p class="nft-description">Token ID: {{ nft.tokenId }}</p>
           </div>
         </div>
       </div>
@@ -18,46 +19,38 @@
 </template>
 
 <script>
-import { ref, watch, onMounted } from 'vue';
 import { getNFTs } from '@/services/nftService';
 
 export default {
   props: ['provider', 'signer', 'address'],
   data() {
     return {
-      isLoading: false
-    }
+      nfts: [],
+      isLoading: false,
+    };
   },
-  setup(props) {
-    const nfts = ref([]);
-    const isLoading = ref(false);
-
-    const fetchNFTs = async () => {
-      isLoading.value = true;
+  methods: {
+    async fetchNFTs() {
+      this.isLoading = true;
       try {
-        const fetchedNFTs = await getNFTs(props.signer, props.address);
-        nfts.value = fetchedNFTs;
+        const fetchedNFTs = await getNFTs(this.signer, this.address);
+        this.nfts = fetchedNFTs;
       } catch (error) {
         alert("Error fetching NFTs");
-      }finally{
-        isLoading.value = false;
+      } finally {
+        this.isLoading = false;
       }
-    };
-
-    onMounted(() => {
-      fetchNFTs();
-    });
-
-    watch(() => props.address, (newAddress, oldAddress) => {
+    },
+  },
+  mounted() {
+    this.fetchNFTs();
+  },
+  watch: {
+    address(newAddress, oldAddress) {
       if (newAddress !== oldAddress) {
-        fetchNFTs();
+        this.fetchNFTs();
       }
-    });
-
-    return {
-      nfts,
-      fetchNFTs,
-    };
+    },
   },
 };
 </script>

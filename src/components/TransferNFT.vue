@@ -4,8 +4,8 @@
         <input v-model="recipient" placeholder="Recipient Address" />
         <select v-model="selectedTokenId">
             <option disabled value="">Select token ID</option>
-            <option v-for="index in tokenIdsLength" :key="index" :value="index">
-                {{ index }}
+            <option v-for="val in tokenIds" :key="val" :value="val">
+                {{ val }}
             </option>
         </select>
         <button @click="transferNFT" :disabled="isLoading">
@@ -27,7 +27,7 @@ export default {
             recipient: '',
             selectedTokenId: '',
             contract: null,
-            tokenIdsLength: 0,
+            tokenIds: 0,
             isLoading: false
         };
     },
@@ -40,23 +40,37 @@ export default {
     methods: {
         async fetchTokenIds(signer) {
             const balance = await this.contract.balanceOf(await signer.getAddress());
-            this.tokenIdsLength = balance.toNumber()
+            const tokenIds = []
+
+            try {
+                for (let i = 0; i < balance.toNumber(); i++) {
+                    const tokenOwner = await this.contract.ownerOf(i);
+                    if (tokenOwner === await signer.getAddress()) {
+                        tokenIds.push(i);
+                    }
+                }
+            } catch (error) {
+                console.log("Error", error)
+            }
+
+            this.tokenIds = tokenIds
         },
         async transferNFT() {
             this.isLoading = true;
             try {
-                if (this.selectedTokenId && this.recipient) {
+                if (this.selectedTokenId !== '' && this.recipient) {
                     await transferNFT(this.signer, this.recipient, this.selectedTokenId);
 
                     alert('NFT transferred successfully!');
                     this.recipient = '';
                     this.selectedTokenId = '';
-                }else{
+                    this.$emit('nft-minted');
+                } else {
                     alert('Recipient and Token ID is mandatory to transfer');
                 }
             } catch (error) {
                 console.error("Error transferring NFT:", error);
-            }finally{
+            } finally {
                 this.isLoading = false;
             }
         },
