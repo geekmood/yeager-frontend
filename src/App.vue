@@ -1,26 +1,63 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">
+      <ConnectWallet @wallet-connected="walletConnected" />
+      <div v-if="provider && signer && address">
+          <NFTGallery ref="gallery" :provider="provider" :signer="signer" :address="address" />
+          <MintNFT :provider="provider" :signer="signer" :address="address" @nft-minted="fetchNFTs" />
+          <TransferNFT :provider="provider" :signer="signer" />
+      </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { shallowRef, ref, onMounted } from 'vue';
+import ConnectWallet from './components/ConnectWallet.vue';
+import NFTGallery from './components/NFTGallary.vue';
+import MintNFT from './components/MintNFT.vue';
+import TransferNFT from './components/TransferNFT.vue';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
-}
-</script>
+      ConnectWallet,
+      NFTGallery,
+      MintNFT,
+      TransferNFT,
+  },
+  setup() {
+      const provider = shallowRef(null);
+      const signer = shallowRef(null);
+      const address = shallowRef('');
+      const galleryRef = ref(null);
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+      const fetchNFTs = async () => {
+          if (provider.value && signer.value && address.value) {
+              const galleryComponent = galleryRef.value;
+              if (galleryComponent) {
+                  galleryComponent.fetchNFTs();
+              }
+          }
+      };
+
+      const walletConnected = (newProvider, newSigner, newAddress) => {
+          provider.value = newProvider;
+          signer.value = newSigner;
+          address.value = newAddress;
+          fetchNFTs();
+      };
+
+      onMounted(() => {
+          fetchNFTs();
+      });
+
+      return {
+          provider,
+          signer,
+          address,
+          walletConnected,
+          fetchNFTs,
+          galleryRef,
+      };
+  },
+};
+</script>
