@@ -43,7 +43,7 @@ export default {
             const tokenIds = []
 
             try {
-                for (let i = 0; i < balance.toNumber(); i++) {
+                for (let i = 0; i <= balance.toNumber(); i++) {
                     const tokenOwner = await this.contract.ownerOf(i);
                     if (tokenOwner === await signer.getAddress()) {
                         tokenIds.push(i);

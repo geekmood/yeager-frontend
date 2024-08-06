@@ -12,7 +12,7 @@ export const getNFTs = async (signer, address) => {
     const nfts = [];
 
     try {
-      for (let i = 0; i < balance.toNumber(); i++) {
+      for (let i = 0; i <= balance.toNumber(); i++) {
         const tokenOwner = await contract.ownerOf(i);
         if(tokenOwner === address){
           const tokenURI = await contract.tokenURI(i);
